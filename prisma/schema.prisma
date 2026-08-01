@@ -29,16 +29,12 @@ model Session {
 
 model Wishlist {
   id         Int      @id @default(autoincrement())
-
+  shop       String
   customerId String
-
   variantId  String
-
   createdAt  DateTime @default(now())
-
   updatedAt  DateTime @updatedAt
 
-  @@unique([customerId, variantId])
-
-  @@index([customerId])
+  @@unique([shop, customerId, variantId])
+  @@index([shop, customerId])
 }
