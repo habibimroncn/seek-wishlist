@@ -36,10 +36,8 @@ export async function action({
   await authenticate.public.appProxy(request);
   const body = await request.json();
 
-  const {
-    customerId,
-    variantId
-  } = body;
+  const customerId = String(body.customerId);
+  const variantId = String(body.variantId);
 
   if (!customerId || !variantId) {
     return data(
