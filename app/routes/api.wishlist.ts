@@ -4,12 +4,14 @@ import {
   getWishlist,
   removeWishlist,
 } from "../services/wishlist.server";
+import { authenticate } from "../shopify.server";
 
 export async function loader({
   request,
 }: {
   request: Request;
 }) {
+  await authenticate.public.appProxy(request);
   const url = new URL(request.url);
 
   const customerId = url.searchParams.get("customerId");
@@ -31,6 +33,7 @@ export async function action({
 }: {
   request: Request;
 }) {
+  await authenticate.public.appProxy(request);
   const body = await request.json();
 
   const {
