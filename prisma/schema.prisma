@@ -7,14 +7,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean?
+  locale        String?
+  collaborator  Boolean?
+  emailVerified Boolean?
+
+  @@index([shop])
+}
+
 model Wishlist {
   id         Int      @id @default(autoincrement())
-  shop       String
+
   customerId String
+
   variantId  String
+
   createdAt  DateTime @default(now())
+
   updatedAt  DateTime @updatedAt
 
-  @@unique([shop, customerId, variantId])
-  @@index([shop, customerId])
+  @@unique([customerId, variantId])
+
+  @@index([customerId])
 }
