@@ -75,3 +75,64 @@ export async function loader({
   return data(result);
 
 }
+
+export async function action({
+  request,
+}: {
+  request: Request;
+}) {
+
+  await authenticate.public.appProxy(request);
+
+  if (request.method !== "POST") {
+    return data(
+      { error: "Method Not Allowed" },
+      { status: 405 },
+    );
+  }
+
+  const body = await request.json();
+
+  const {
+    action,
+    customerId,
+    variantId,
+  } = body;
+
+  if (!customerId || !variantId) {
+    return data(
+      { error: "Missing parameters" },
+      { status: 400 },
+    );
+  }
+
+  switch (action) {
+
+    case "add":
+
+      return data(
+        await addWishlist(
+          customerId,
+          variantId,
+        ),
+      );
+
+    case "remove":
+
+      return data(
+        await removeWishlist(
+          customerId,
+          variantId,
+        ),
+      );
+
+    default:
+
+      return data(
+        { error: "Invalid action" },
+        { status: 400 },
+      );
+
+  }
+
+}
