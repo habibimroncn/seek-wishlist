@@ -1,77 +1,77 @@
 import { data } from "react-router";
+
+import { authenticate } from "../shopify.server";
+
 import {
   addWishlist,
   getWishlist,
   removeWishlist,
 } from "../services/wishlist.server";
-import { authenticate } from "../shopify.server";
+
+import { getProductsByVariantIds } from "../services/product.server";
 
 export async function loader({
   request,
 }: {
   request: Request;
 }) {
+
   await authenticate.public.appProxy(request);
+
   const url = new URL(request.url);
 
-  const customerId = url.searchParams.get("customerId");
+  const customerId = String(
+    url.searchParams.get("customerId"),
+  );
 
-  if (!customerId) {
-    return data(
-      { error: "Missing parameters" },
-      { status: 400 }
-    );
+  const wishlist = await getWishlist(customerId);
+
+  if (!wishlist.length) {
+    return data([]);
   }
 
-  const wishlist = await getWishlist(customerId!);
+  const variants = await getProductsByVariantIds(
+    request,
+    wishlist.map((item) => item.variantId),
+  );
 
-  return data(wishlist);
-}
+  const variantMap = new Map(
+    variants.map((variant: any) => [
+      variant.id.split("/").pop(),
+      variant,
+    ]),
+  );
 
-export async function action({
-  request,
-}: {
-  request: Request;
-}) {
-  await authenticate.public.appProxy(request);
-  const body = await request.json();
+  const result = wishlist.map((item) => {
 
-  const customerId = String(body.customerId);
-  const variantId = String(body.variantId);
+    const variant = variantMap.get(item.variantId) as any;
 
-  if (!customerId || !variantId) {
-    return data(
-      { error: "Missing parameters" },
-      { status: 400 }
-    );
-  }
+    return {
 
-  switch (request.method) {
+      variantId: item.variantId,
 
-    case "POST":
+      productId:
+        variant?.product?.id ?? "",
 
-      return data(
-        await addWishlist(
-          customerId,
-          variantId
-        )
-      );
+      title:
+        variant?.product?.title ?? "",
 
-    case "DELETE":
+      handle:
+        variant?.product?.handle ?? "",
 
-      return data(
-        await removeWishlist(
-          customerId,
-          variantId
-        )
-      );
+      image:
+        variant?.product?.featuredImage?.url ?? "",
 
-    default:
+      price:
+        variant?.price ?? "",
 
-      return data(
-        { error: "Method not allowed" },
-        { status: 405 }
-      );
+      available:
+        variant?.availableForSale ?? false,
 
-  }
+    };
+
+  });
+
+  return data(result);
+
 }
