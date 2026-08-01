@@ -15,6 +15,10 @@ model Session {
   scope         String?
   expires       DateTime?
   accessToken   String
+
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+
   userId        BigInt?
   firstName     String?
   lastName      String?
